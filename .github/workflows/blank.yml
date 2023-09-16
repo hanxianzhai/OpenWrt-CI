@@ -49,26 +49,29 @@ jobs:
 
           # sudo mkdir -p -m 777 /mnt/openwrt/bin /mnt/openwrt/build_dir/host /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir
           # ln -s /mnt/openwrt/bin ./bin
-          mkdir -p ./build_dir
-          cd ./build_dir
+          mkdir -p /mnt/build_dir
+          cd /mnt/build_dir
           git clone http://git.z4.cn/https://github.com/openwrt/openwrt.git
           cd openwrt
           git checkout v23.05.0-rc3
           echo "src-git kiddin9 https://github.com/kiddin9/openwrt-packages.git" >> feeds.conf.default
-          # ln -s -f /mnt/openwrt/build_dir/host ./build_dir/host
-          # ln -s -f /mnt/openwrt/build_dir/hostpkg ./build_dir/hostpkg
-          # ln -s /mnt/openwrt/dl ./dl
-          # ln -s /mnt/openwrt/feeds ./feeds
-          # ln -s /mnt/openwrt/staging_dir ./staging_dir
+          #ln -s /mnt/openwrt/bin ./bin
+          #ln -s -f /mnt/openwrt/build_dir/host ./build_dir/host
+          #ln -s -f /mnt/openwrt/build_dir/hostpkg ./build_dir/hostpkg
+          #ln -s /mnt/openwrt/dl ./dl
+          #ln -s /mnt/openwrt/feeds ./feeds
+          #ln -s /mnt/openwrt/staging_dir ./staging_dir
 
           df -h
 
       - name: Update feeds
+        working-directory: /mnt/build_dir/openwrt
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
       - name: Generate configuration file
+        working-directory: /mnt/build_dir/openwrt
         run: |
           rm -f ./.config*
           touch ./.config
@@ -8745,12 +8748,14 @@ jobs:
           make defconfig
 
       - name: Make download
+        working-directory: /mnt/build_dir/openwrt
         run: |
           make download -j8 || make download -j1 V=s
           rm -rf $(find ./dl/ -size -1024c)
           df -h
 
       - name: Compile firmware
+        working-directory: /mnt/build_dir/openwrt
         run: |
           make -j$(nproc) || make -j1 V=s
           echo "======================="
@@ -8766,10 +8771,10 @@ jobs:
           mkdir -p ./artifact/firmware
           mkdir -p ./artifact/package
           mkdir -p ./artifact/buildinfo
-          rm -rf $(find ./bin/targets/ -type d -name "packages")
-          cp -rf $(find ./bin/targets/ -type f) ./artifact/firmware/
-          cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
-          cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
+          rm -rf $(find /mnt/build_dir/openwrt/bin/targets/ -type d -name "packages")
+          cp -rf $(find /mnt/build_dir/openwrt/bin/targets/ -type f) ./artifact/firmware/
+          cp -rf $(find /mnt/build_dir/openwrt/bin/packages/ -type f -name "*.ipk") ./artifact/package/
+          cp -rf $(find /mnt/build_dir/openwrt/bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
       - name: Deliver buildinfo
         uses: actions/upload-artifact@v2
