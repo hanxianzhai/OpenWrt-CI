@@ -49,9 +49,10 @@ jobs:
 
           # sudo mkdir -p -m 777 /mnt/openwrt/bin /mnt/openwrt/build_dir/host /mnt/openwrt/build_dir/hostpkg /mnt/openwrt/dl /mnt/openwrt/feeds /mnt/openwrt/staging_dir
           # ln -s /mnt/openwrt/bin ./bin
-          mkdir -p /mnt/build_dir
+          sudo mkdir -p /mnt/build_dir
+          sudo chmod 777 /mnt/build_dir
           cd /mnt/build_dir
-          git clone http://git.z4.cn/https://github.com/openwrt/openwrt.git
+          git clone https://github.com/openwrt/openwrt.git
           cd openwrt
           git checkout v23.05.0-rc3
           echo "src-git kiddin9 https://github.com/kiddin9/openwrt-packages.git" >> feeds.conf.default
